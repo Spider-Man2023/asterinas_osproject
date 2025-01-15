@@ -2,6 +2,7 @@ use alloc::{
     boxed::Box,
     vec,
 };
+use ostd::Pod;
 use log::debug;
 use core::{
     hint::spin_loop,
@@ -9,31 +10,7 @@ use core::{
 };
 use super::{
     config::{VirtioGPUConfig, GPUFeatures}, 
-    header::{
-        VirtioGpuCtrlHdr,
-        VirtioGpuCtrlType,
-        HDR_LEN,
-        VirtioGpuRect,
-        VirtioGpuRespDisplayInfo,
-        GET_DISPLAY_INFO_LEN,
-        VirtioGpuGetEdid,
-        GET_EDID_LEN,
-        VirtioGpuRespEDID,
-        RESP_EDID_LEN,
-        VirtioGpuFormats,
-        VirtioGpuResourceCreate2d,
-        CREATE_RESOURCE_LEN,
-        VirtioGpuResourceAttachBacking,
-        VirtioGpuMemEntry,
-        ATTACH_RESOURCE_LEN,
-        ATTACH_RESOURCE_ENTRY_LEN,
-        VirtioGpuSetScanout,
-        SET_SCANOUT_LEN,
-        VirtioGpuTransferToHost2d,
-        TRANSFER_TO_HOST_LEN,
-        VirtioGpuResourceFlush,
-        FLUSH_RESOURCE_LEN,
-    }, 
+    header::*, 
     DEVICE_NAME
 };
 use ostd::{
@@ -187,6 +164,138 @@ impl GPUDevice {
             },
             Err(e) => {
                 early_println!("    Failed to get response: {:?}", e);
+            },
+        }
+        // 5.7.6.9 Device Operation: controlq (3d)
+        early_println!("————————5.7.6.9 Device Operation: controlq (3d)————————");
+        early_println!("    ————Create Context————");
+        let resp = device.create_context(1, "test_context", 0);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to create context: {:?}", e);
+            },
+        }
+
+        early_println!("    ————Destroy Context————");
+        let resp = device.destroy_context(1);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to destroy context: {:?}", e);
+            },
+        }
+
+        early_println!("    ————Attach Resource to Context————");
+        let resp = device.attach_resource_to_context(1, 1);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to attach resource to context: {:?}", e);
+            },
+        }
+
+        early_println!("    ————Detach Resource from Context————");
+        let resp = device.detach_resource_from_context(1, 1);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to detach resource from context: {:?}", e);
+            },
+        }
+
+        early_println!("    ————Create 3D Resource————");
+        let resp = device.create_3d_resource(2, 1024, 768);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to create 3D resource: {:?}", e);
+            },
+        }
+
+        early_println!("    ————Transfer to Host 3D————");
+        let resp = device.transfer_to_host_3d(1, 0, 1024);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to transfer to host 3D: {:?}", e);
+            },
+        }
+
+        early_println!("    ————Transfer from Host 3D————");
+        let resp = device.transfer_from_host_3d(1, 0, 1024);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to transfer from host 3D: {:?}", e);
+            },
+        }
+
+        early_println!("    ————Submit 3D————");
+        let resp = device.submit_3d(1, &[0u8; 1024]);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to submit 3D: {:?}", e);
+            },
+        }
+
+        early_println!("    ————Map Blob Resource————");
+        let resp = device.map_blob_resource(1, 0);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to map blob resource: {:?}", e);
+            },
+        }
+
+        early_println!("    ————Unmap Blob Resource————");
+        let resp = device.unmap_blob_resource(1);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to unmap blob resource: {:?}", e);
+            },
+        }
+        early_println!("    ————Update Cursor————");
+        let resp = device.update_cursor(0, 100, 100, 1, 0, 0);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to update cursor: {:?}", e);
+            },
+        }
+
+        early_println!("    ————Move Cursor————");
+        let resp = device.move_cursor(0, 200, 200);
+        match resp {
+            Ok(type_) => {
+                early_println!("    Response type: {:x}", type_);
+            },
+            Err(e) => {
+                early_println!("    Failed to move cursor: {:?}", e);
             },
         }
         early_println!("————————GPU End————————");
@@ -597,37 +706,27 @@ impl GPUDevice {
         let resp_msg: VirtioGpuCtrlHdr = resp_slice.read_val(0).unwrap();
         Ok(resp_msg.type_)
     }
-
+    // 5.7.6.9 Device Operation: controlq (3d)
     // 尝试发送头部
-    fn send_recv_ctrl(&mut self, ctrl_type: VirtioGpuCtrlType) -> Result<(), VirtioDeviceError> {
+    fn send_recv_ctrl<T: Pod>(&mut self, req: &T, len: usize) -> Result<u32, VirtioDeviceError> {
         let req_slice = {
-            let req_slice = DmaStreamSlice::new(&self.control_buffer, 0, HDR_LEN);
-            let req = VirtioGpuCtrlHdr {
-                type_: ctrl_type as u32,
-                flags: 0,
-                fence_id: 0,
-                ctx_id: 0,
-                ring_idx: 0,
-                padding: [0; 3],
-            };
-            req_slice.write_val(0, &req).unwrap();
+            let req_slice = DmaStreamSlice::new(&self.control_buffer, 0, len);
+            req_slice.write_val(0, req).unwrap();
             req_slice.sync().unwrap();
             req_slice
         };
-        
-        // 创建临时接收buffer
-        let display_info_stream = {
+
+        let resp_buffer = {
             let segment = FrameAllocOptions::new()
                 .zeroed(false)
                 .alloc_segment(1)
                 .unwrap();
             DmaStream::map(segment.into(), DmaDirection::FromDevice, false).unwrap()
         };
-        let display_info_slice = DmaStreamSlice::new(&display_info_stream, 0, HDR_LEN);
-        
-        // 绑定buffer并发送
+        let resp_slice = DmaStreamSlice::new(&resp_buffer, 0, HDR_LEN);
+
         self.control_queue.disable_irq().lock()
-            .add_dma_buf(&[&req_slice], &[&display_info_slice])
+            .add_dma_buf(&[&req_slice], &[&resp_slice])
             .expect("GPU query failed");
         if self.control_queue.lock().should_notify() {
             self.control_queue.lock().notify();
@@ -636,20 +735,254 @@ impl GPUDevice {
             spin_loop();
         }
         let _ = self.control_queue.lock().pop_used();
-        display_info_stream.sync(0..24).unwrap();
+        resp_buffer.sync(0..HDR_LEN).unwrap();
 
-        // 接收消息
-        // let value = display_info_stream.reader().unwrap().read_once::<u64>().unwrap();
-        display_info_slice.sync().unwrap();
-        let display_info: VirtioGpuCtrlHdr = display_info_slice.read_val(0).unwrap();
-        early_println!("————————Display Info————————");
-        early_println!("Display type:{:x}", display_info.type_);
-        early_println!("Display flags:{:x}", display_info.flags);
-        early_println!("Display fence_id:{:x}", display_info.fence_id);
-        early_println!("Display ctx_id:{:x}", display_info.ctx_id);
-        early_println!("Display ring_idx:{:x}", display_info.ring_idx);
-        // early_println!("Display padding:{:x}", display_info.padding);
-        // 有消息按消息设置，否则默认
-        Ok(())
+        resp_slice.sync().unwrap();
+        let resp_msg: VirtioGpuCtrlHdr = resp_slice.read_val(0).unwrap();
+        Ok(resp_msg.type_)
+    }
+
+    fn create_context(&mut self, ctx_id: u32, debug_name: &str, context_init: u32) -> Result<u32, VirtioDeviceError> {
+        let mut debug_name_bytes = [0u8; 64];
+        let name_bytes = debug_name.as_bytes();
+        let nlen = name_bytes.len().min(debug_name_bytes.len());
+        debug_name_bytes[..nlen].copy_from_slice(&name_bytes[..nlen]);
+
+        let req = VirtioGpuCtxCreate {
+            hdr: VirtioGpuCtrlHdr {
+                type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_CTX_CREATE as u32,
+                flags: 0,
+                fence_id: 0,
+                ctx_id,
+                ring_idx: 0,
+                padding: [0; 3],
+            },
+            nlen: nlen as u32,
+            context_init,
+            debug_name: debug_name_bytes,
+        };
+
+        self.send_recv_ctrl(&req, CREATE_CONTEXT_LEN)
+    }
+
+    fn destroy_context(&mut self, ctx_id: u32) -> Result<u32, VirtioDeviceError> {
+        let req = VirtioGpuCtrlHdr {
+            type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_CTX_DESTROY as u32,
+            flags: 0,
+            fence_id: 0,
+            ctx_id,
+            ring_idx: 0,
+            padding: [0; 3],
+        };
+
+        self.send_recv_ctrl(&req, HDR_LEN)
+    }
+
+    fn attach_resource_to_context(&mut self, ctx_id: u32, resource_id: u32) -> Result<u32, VirtioDeviceError> {
+        let req = VirtioGpuCtrlHdr {
+            type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_CTX_ATTACH_RESOURCE as u32,
+            flags: 0,
+            fence_id: 0,
+            ctx_id,
+            ring_idx: 0,
+            padding: [0; 3],
+        };
+
+        self.send_recv_ctrl(&req, HDR_LEN)
+    }
+
+    fn detach_resource_from_context(&mut self, ctx_id: u32, resource_id: u32) -> Result<u32, VirtioDeviceError> {
+        let req = VirtioGpuCtrlHdr {
+            type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_CTX_DETACH_RESOURCE as u32,
+            flags: 0,
+            fence_id: 0,
+            ctx_id,
+            ring_idx: 0,
+            padding: [0; 3],
+        };
+
+        self.send_recv_ctrl(&req, HDR_LEN)
+    }
+
+    fn create_3d_resource(&mut self, resource_id: u32, width: u32, height: u32) -> Result<u32, VirtioDeviceError> {
+        let req = VirtioGpuResourceCreate2d {
+            hdr: VirtioGpuCtrlHdr {
+                type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_RESOURCE_CREATE_3D as u32,
+                flags: 0,
+                fence_id: 0,
+                ctx_id: 0,
+                ring_idx: 0,
+                padding: [0; 3],
+            },
+            resource_id,
+            format: VirtioGpuFormats::VIRTIO_GPU_FORMAT_B8G8R8A8_UNORM as u32,
+            width,
+            height,
+        };
+
+        self.send_recv_ctrl(&req, CREATE_RESOURCE_LEN)
+    }
+
+    fn transfer_to_host_3d(&mut self, resource_id: u32, offset: u64, length: u32) -> Result<u32, VirtioDeviceError> {
+        let req = VirtioGpuResourceMapBlob {
+            hdr: VirtioGpuCtrlHdr {
+                type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_TRANSFER_TO_HOST_3D as u32,
+                flags: 0,
+                fence_id: 0,
+                ctx_id: 0,
+                ring_idx: 0,
+                padding: [0; 3],
+            },
+            resource_id,
+            padding: 0,
+            offset,
+        };
+
+        self.send_recv_ctrl(&req, MAP_BLOB_LEN)
+    }
+
+    fn transfer_from_host_3d(&mut self, resource_id: u32, offset: u64, length: u32) -> Result<u32, VirtioDeviceError> {
+        let req = VirtioGpuResourceMapBlob {
+            hdr: VirtioGpuCtrlHdr {
+                type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_TRANSFER_FROM_HOST_3D as u32,
+                flags: 0,
+                fence_id: 0,
+                ctx_id: 0,
+                ring_idx: 0,
+                padding: [0; 3],
+            },
+            resource_id,
+            padding: 0,
+            offset,
+        };
+
+        self.send_recv_ctrl(&req, MAP_BLOB_LEN)
+    }
+
+    fn submit_3d(&mut self, ctx_id: u32, command_stream: &[u8]) -> Result<u32, VirtioDeviceError> {
+        let req = VirtioGpuCtrlHdr {
+            type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_SUBMIT_3D as u32,
+            flags: 0,
+            fence_id: 0,
+            ctx_id,
+            ring_idx: 0,
+            padding: [0; 3],
+        };
+
+        self.send_recv_ctrl(&req, HDR_LEN)
+    }
+    
+    fn map_blob_resource(&mut self, resource_id: u32, offset: u64) -> Result<u32, VirtioDeviceError> {
+        let req = VirtioGpuResourceMapBlob {
+            hdr: VirtioGpuCtrlHdr {
+                type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_RESOURCE_MAP_BLOB as u32,
+                flags: 0,
+                fence_id: 0,
+                ctx_id: 0,
+                ring_idx: 0,
+                padding: [0; 3],
+            },
+            resource_id,
+            padding: 0,
+            offset,
+        };
+
+        self.send_recv_ctrl(&req, MAP_BLOB_LEN)
+    }
+
+    fn unmap_blob_resource(&mut self, resource_id: u32) -> Result<u32, VirtioDeviceError> {
+        let req = VirtioGpuResourceUnmapBlob {
+            hdr: VirtioGpuCtrlHdr {
+                type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_RESOURCE_UNMAP_BLOB as u32,
+                flags: 0,
+                fence_id: 0,
+                ctx_id: 0,
+                ring_idx: 0,
+                padding: [0; 3],
+            },
+            resource_id,
+            padding: 0,
+        };
+
+        self.send_recv_ctrl(&req, UNMAP_BLOB_LEN)
+    }
+
+    fn update_cursor(&mut self, scanout_id: u32, x: u32, y: u32, resource_id: u32, hot_x: u32, hot_y: u32) -> Result<u32, VirtioDeviceError> {
+        let req_slice = {
+            let req = VirtioGpuUpdateCursor {
+                hdr: VirtioGpuCtrlHdr {
+                    type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_UPDATE_CURSOR as u32,
+                    flags: 0,
+                    fence_id: 0,
+                    ctx_id: 0,
+                    ring_idx: 0,
+                    padding: [0; 3],
+                },
+                pos: VirtioGpuCursorPos {
+                    scanout_id,
+                    x,
+                    y,
+                    padding: 0,
+                },
+                resource_id,
+                hot_x,
+                hot_y,
+                padding: 0,
+            };
+            let req_slice = DmaStreamSlice::new(&self.cursor_buffer, 0, UPDATE_CURSOR_LEN);
+            req_slice.write_val(0, &req).unwrap();
+            req_slice.sync().unwrap();
+            req_slice
+        };
+
+        let resp_buffer = {
+            let segment = FrameAllocOptions::new()
+                .zeroed(false)
+                .alloc_segment(1)
+                .unwrap();
+            DmaStream::map(segment.into(), DmaDirection::FromDevice, false).unwrap()
+        };
+        let resp_slice = DmaStreamSlice::new(&resp_buffer, 0, HDR_LEN);
+
+        self.control_queue.disable_irq().lock()
+            .add_dma_buf(&[&req_slice], &[&resp_slice])
+            .expect("GPU query failed");
+        if self.control_queue.lock().should_notify() {
+            self.control_queue.lock().notify();
+        }
+        while !self.control_queue.lock().can_pop() {
+            spin_loop();
+        }
+        let _ = self.control_queue.lock().pop_used();
+        resp_buffer.sync(0..HDR_LEN).unwrap();
+
+        resp_slice.sync().unwrap();
+        let resp_msg: VirtioGpuCtrlHdr = resp_slice.read_val(0).unwrap();
+        Ok(resp_msg.type_)
+    }
+
+    fn move_cursor(&mut self, scanout_id: u32, x: u32, y: u32) -> Result<u32, VirtioDeviceError> {
+        let req = VirtioGpuUpdateCursor {
+            hdr: VirtioGpuCtrlHdr {
+                type_: VirtioGpuCtrlType::VIRTIO_GPU_CMD_MOVE_CURSOR as u32,
+                flags: 0,
+                fence_id: 0,
+                ctx_id: 0,
+                ring_idx: 0,
+                padding: [0; 3],
+            },
+            pos: VirtioGpuCursorPos {
+                scanout_id,
+                x,
+                y,
+                padding: 0,
+            },
+            resource_id: 0,
+            hot_x: 0,
+            hot_y: 0,
+            padding: 0,
+        };
+
+        self.send_recv_ctrl(&req, size_of::<VirtioGpuUpdateCursor>())
     }
 }

@@ -197,3 +197,62 @@ pub struct VirtioGpuResourceFlush {
     pub padding: u32,
 }
 pub const FLUSH_RESOURCE_LEN: usize = size_of::<VirtioGpuResourceFlush>();
+#[repr(C)]
+#[derive(Debug, Clone, Copy, Pod)]
+pub struct VirtioGpuCtxCreate {
+    pub hdr: VirtioGpuCtrlHdr,
+    pub nlen: u32,
+    pub context_init: u32,
+    pub debug_name: [u8; 64],
+}
+pub const CREATE_CONTEXT_LEN: usize = size_of::<VirtioGpuCtxCreate>();
+
+#[repr(C)]
+#[derive(Default, Debug, Clone, Copy, Pod)]
+pub struct VirtioGpuResourceMapBlob {
+    pub hdr: VirtioGpuCtrlHdr,
+    pub resource_id: u32,
+    pub padding: u32,
+    pub offset: u64,
+}
+pub const MAP_BLOB_LEN: usize = size_of::<VirtioGpuResourceMapBlob>();
+
+#[repr(C)]
+#[derive(Default, Debug, Clone, Copy, Pod)]
+pub struct VirtioGpuRespMapInfo {
+    pub hdr: VirtioGpuCtrlHdr,
+    pub map_info: u32,
+    pub padding: u32,
+}
+pub const MAP_INFO_LEN: usize = size_of::<VirtioGpuRespMapInfo>();
+
+#[repr(C)]
+#[derive(Default, Debug, Clone, Copy, Pod)]
+pub struct VirtioGpuResourceUnmapBlob {
+    pub hdr: VirtioGpuCtrlHdr,
+    pub resource_id: u32,
+    pub padding: u32,
+}
+pub const UNMAP_BLOB_LEN: usize = size_of::<VirtioGpuResourceUnmapBlob>();
+
+#[repr(C)]
+#[derive(Default, Debug, Clone, Copy, Pod)]
+pub struct VirtioGpuCursorPos {
+    pub scanout_id: u32,
+    pub x: u32,
+    pub y: u32,
+    pub padding: u32,
+}
+pub const CURSOR_POS_LEN: usize = size_of::<VirtioGpuCursorPos>();
+
+#[repr(C)]
+#[derive(Default, Debug, Clone, Copy, Pod)]
+pub struct VirtioGpuUpdateCursor {
+    pub hdr: VirtioGpuCtrlHdr,
+    pub pos: VirtioGpuCursorPos,
+    pub resource_id: u32,
+    pub hot_x: u32,
+    pub hot_y: u32,
+    pub padding: u32,
+}
+pub const UPDATE_CURSOR_LEN: usize = size_of::<VirtioGpuUpdateCursor>();
