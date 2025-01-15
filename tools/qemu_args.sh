@@ -43,14 +43,15 @@ else
     echo "Invalid netdev" 1>&2
     NETDEV_ARGS="-nic none"
 fi
-
+    # -nographic \
+    # -display none \
 COMMON_QEMU_ARGS="\
     -cpu Icelake-Server,+x2apic \
     -smp ${SMP:-1} \
     -m ${MEM:-8G} \
     --no-reboot \
-    -nographic \
-    -display none \
+    -vga virtio\
+    -display vnc=:0 \
     -serial chardev:mux \
     -monitor chardev:mux \
     -chardev stdio,id=mux,mux=on,signal=off,logfile=qemu.log \
@@ -85,6 +86,7 @@ QEMU_ARGS="\
     -device virtconsole,chardev=mux \
     $IOMMU_EXTRA_ARGS \
 "
+# -device virtio-gpu \
 
 MICROVM_QEMU_ARGS="\
     $COMMON_QEMU_ARGS \
